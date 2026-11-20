@@ -1,0 +1,143 @@
+{% extends "payroll/employee_base.html" %}
+{% load static %}
+
+{% block title %}Welcome, {{ employee.full_name }} - Finance Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header Area Matching Uploaded Layout -->
+<div class="top-header">
+    <div class="top-header-title">
+        <h1>Welcome, {{ employee.full_name }}</h1>
+        <p>Sample data for layout</p>
+    </div>
+</div>
+
+<!-- Top 2-Column Section (My details & Attendance) -->
+<div class="employee-top-grid">
+    <!-- Left Card: My details -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 class="card-heading" style="margin: 0;">My details</h2>
+            <a href="{% url 'employee_profile' %}" class="table-link" style="font-size: 0.85rem;">View Profile &rarr;</a>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Employee ID</span>
+            <span class="detail-value">{{ employee.emp_code }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Department</span>
+            <span class="detail-value">{{ employee.department.name|default:"Engineering" }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Designation</span>
+            <span class="detail-value">{{ employee.designation }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Work email</span>
+            <span class="detail-value">{{ employee.work_email }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Joined</span>
+            <span class="detail-value">{{ employee.joining_date|date:"d M Y" }}</span>
+        </div>
+    </div>
+
+    <!-- Right Card: Attendance, November 2026 -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 class="card-heading" style="margin: 0;">Attendance, November 2026</h2>
+            <a href="{% url 'employee_attendance' %}" class="table-link" style="font-size: 0.85rem;">Full Attendance &rarr;</a>
+        </div>
+
+        <div class="attend-stats-top">
+            <div class="attend-stat-box">
+                <div class="count">{{ stat_present }}</div>
+                <div class="label">Present</div>
+            </div>
+            <div class="attend-stat-box">
+                <div class="count">{{ stat_leave }}</div>
+                <div class="label">Leave</div>
+            </div>
+            <div class="attend-stat-box">
+                <div class="count">{{ stat_absent }}</div>
+                <div class="label">Absent</div>
+            </div>
+        </div>
+
+        <!-- 7-Column Calendar Grid -->
+        <div class="calendar-grid">
+            <div class="cal-header">Sun</div>
+            <div class="cal-header">Mon</div>
+            <div class="cal-header">Tue</div>
+            <div class="cal-header">Wed</div>
+            <div class="cal-header">Thu</div>
+            <div class="cal-header">Fri</div>
+            <div class="cal-header">Sat</div>
+
+            {% for item in calendar_days %}
+                <div class="cal-day {{ item.type }}">{{ item.day }}</div>
+            {% endfor %}
+            <!-- Extra empty cells for 7x5 alignment if needed -->
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+        </div>
+
+        <div class="cal-legend-footer">
+            Light green: present &nbsp;&nbsp; Orange: leave &nbsp;&nbsp; Dark red: absent &nbsp;&nbsp; Grey: weekly off
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section: My payslips -->
+<div class="content-card" style="margin-top: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 class="card-heading" style="margin: 0;">My payslips</h2>
+        <a href="{% url 'employee_payslips' %}" class="table-link" style="font-size: 0.85rem;">View All Statements &rarr;</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="design-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Gross</th>
+                    <th>Deductions</th>
+                    <th>Net pay</th>
+                    <th>Status</th>
+                    <th style="text-align: right; width: 150px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pay in payment_history %}
+                <tr>
+                    <td style="font-weight: 500;">{{ pay.month_year_label }}</td>
+                    <td>₹{{ pay.basic_salary|add:pay.allowances|add:pay.bonus|floatformat:0 }}</td>
+                    <td>₹{{ pay.deductions|floatformat:0 }}</td>
+                    <td style="font-weight: 600;">₹{{ pay.net_paid|floatformat:0 }}</td>
+                    <td><span class="pill-badge done">Paid</span></td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'view_payslip' pay.id %}" target="_blank" class="table-link">
+                            Download PDF
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        No payslips available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

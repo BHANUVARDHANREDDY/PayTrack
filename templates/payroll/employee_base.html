@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Employee Portal - Finance Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'payroll/css/style.css' %}">
+</head>
+<body class="app-layout">
+
+    <!-- Left Sidebar Strictly for Employee Portal (Matching Employee dashboard.png) -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            Finance Portal
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'employee_portal' %}" class="sidebar-link {% if active_section == 'dashboard' or not active_section %}active{% endif %}">
+                Dashboard
+            </a>
+            <a href="{% url 'employee_profile' %}" class="sidebar-link {% if active_section == 'profile' %}active{% endif %}">
+                My profile
+            </a>
+            <a href="{% url 'employee_attendance' %}" class="sidebar-link {% if active_section == 'attendance' %}active{% endif %}">
+                Attendance
+            </a>
+            <a href="{% url 'employee_payslips' %}" class="sidebar-link {% if active_section == 'payslips' %}active{% endif %}">
+                Payslips
+            </a>
+        </nav>
+
+        <!-- Sidebar Footer Strictly for Employee -->
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-name">{{ employee.full_name|default:user.get_full_name|default:user.username }}</div>
+                <div class="sidebar-user-role">Employee ({{ employee.emp_code }})</div>
+            </div>
+
+            <div class="sidebar-actions" style="margin-top: 0.75rem;">
+                <a href="{% url 'employee_logout' %}" class="sidebar-logout" style="width: 100%; text-align: center; display: block;">
+                    Sign Out
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-viewport">
+        {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Pure JavaScript Modules -->
+    <script src="{% static 'payroll/js/dashboard.js' %}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

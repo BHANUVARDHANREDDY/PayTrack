@@ -1,0 +1,435 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONTHLY SALARY SLIP - {{ payment.month_year_label }} - {{ employee.full_name }}</title>
+    <link rel="stylesheet" href="{% static 'payroll/css/style.css' %}">
+    <style>
+        /* Document Letter Specific Styles */
+        body {
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 2rem 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        .action-toolbar {
+            max-width: 860px;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-letter-paper {
+            max-width: 860px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 3rem 3.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+            box-sizing: border-box;
+            border: 1px solid #e2e8f0;
+        }
+
+        .letterhead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #0b1a2c;
+            margin-bottom: 1.75rem;
+        }
+
+        .company-branding h1 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0b1a2c;
+            margin: 0 0 0.35rem 0;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .company-branding p {
+            margin: 0.15rem 0;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .doc-classification {
+            text-align: right;
+        }
+
+        .doc-classification .title-badge {
+            background-color: #0b1a2c;
+            color: #ffffff;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            border-radius: 2px;
+        }
+
+        .doc-classification .meta-text {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin: 0.15rem 0;
+        }
+
+        .letter-recipient-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 0.88rem;
+        }
+
+        .recipient-col p {
+            margin: 0.25rem 0;
+        }
+
+        .letter-subject {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .letter-body-intro {
+            font-size: 0.88rem;
+            color: #334155;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Statement Ledger Table */
+        .statement-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .statement-table th {
+            background: #0b1a2c;
+            color: #ffffff;
+            text-align: left;
+            padding: 0.65rem 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            font-size: 0.8rem;
+        }
+
+        .statement-table td {
+            padding: 0.6rem 0.85rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .statement-table tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        .statement-table .total-subrow {
+            background-color: #f1f5f9 !important;
+            font-weight: 700;
+            border-top: 1.5px solid #cbd5e1;
+            border-bottom: 1.5px solid #cbd5e1;
+        }
+
+        /* Net Remuneration Banner */
+        .net-remuneration-card {
+            background: #f0fdf4;
+            border: 2px solid #16a34a;
+            border-radius: 4px;
+            padding: 1.25rem 1.75rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .net-remuneration-card .net-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #166534;
+            letter-spacing: 0.05em;
+        }
+
+        .net-remuneration-card .net-words {
+            font-size: 0.85rem;
+            color: #14532d;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        .net-remuneration-card .net-value {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #15803d;
+        }
+
+        /* Transaction Verification Block */
+        .txn-audit-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 2rem;
+            font-size: 0.8rem;
+            color: #475569;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        /* Sign-off & Stamp Section */
+        .letter-signoff-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+        }
+
+        .sign-box {
+            width: 240px;
+        }
+
+        .sign-line {
+            height: 1px;
+            background: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .corporate-stamp {
+            border: 2px dashed #0284c7;
+            color: #0369a1;
+            padding: 0.6rem 1.25rem;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+
+        .legal-notice-footer {
+            margin-top: 2.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Print Media Styles */
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0;
+            }
+            .action-toolbar {
+                display: none !important;
+            }
+            .doc-letter-paper {
+                box-shadow: none;
+                border: none;
+                padding: 1.5cm 1.5cm;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Action Bar (Hidden during print) -->
+    <div class="action-toolbar">
+        <a href="{% url 'employee_payslips' %}" class="btn-primary-green" style="background: transparent; border: 1px solid #cbd5e1; color: #334155; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.88rem; font-weight: 600;">
+            &larr; Back to Payslips Archive
+        </a>
+        <button onclick="window.print()" class="btn-primary-green" style="padding: 0.5rem 1.25rem; border-radius: 6px; font-size: 0.88rem; font-weight: 700; cursor: pointer;">
+            🖨️ Print / Save as PDF Letter
+        </button>
+    </div>
+
+    <!-- Official Document Letter Paper -->
+    <div class="doc-letter-paper">
+
+        <!-- Company Letterhead Header -->
+        <div class="letterhead-header">
+            <div class="company-branding">
+                <h1>FinCorp Global Enterprises Pvt. Ltd.</h1>
+                <p><strong>Corporate Finance & Payroll Administration Division</strong></p>
+                <p>Tower 4, Cyber City Technology District, Hyderabad - 500081, India</p>
+                <p>CIN: U72200TG2026PTC099821 &bull; GSTIN: 36AAACF1029P1Z9 &bull; PAN: AAACF1029P</p>
+                <p>Email: payroll@fincorp.com &bull; Web: www.fincorp.internal &bull; Tel: +91 (40) 4920-8000</p>
+            </div>
+            <div class="doc-classification">
+                <div class="title-badge">SALARY ADVICE LETTER</div>
+                <div class="meta-text"><strong>Ref:</strong> {{ ref_no }}</div>
+                <div class="meta-text"><strong>Date:</strong> {{ payment.payment_date|date:"F d, Y" }}</div>
+                <div class="meta-text" style="color: #166534; font-weight: 700;">● STATUS: PAID</div>
+            </div>
+        </div>
+
+        <!-- Addressee & Job Ledger Information -->
+        <div class="letter-recipient-box">
+            <div class="recipient-col">
+                <p style="color: #64748b; font-size: 0.78rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">To / Employee Particulars:</p>
+                <p style="font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ employee.full_name }}</p>
+                <p><strong>Employee ID:</strong> {{ employee.emp_code }}</p>
+                <p><strong>Designation:</strong> {{ employee.designation }}</p>
+                <p><strong>Department:</strong> {{ employee.department.name|default:"Engineering" }}</p>
+                <p><strong>Work Location:</strong> Bangalore Headquarters</p>
+                <p><strong>Date of Joining:</strong> {{ employee.joining_date|date:"d M Y" }}</p>
+            </div>
+            <div class="recipient-col">
+                <p style="color: #64748b; font-size: 0.78rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem;">Banking & Tax Particulars:</p>
+                <p><strong>Bank Name:</strong> {{ employee.bank_name }}</p>
+                <p><strong>Account Number:</strong> <code>{{ employee.account_number }}</code></p>
+                <p><strong>IFSC Code:</strong> <code>{{ employee.ifsc_code }}</code></p>
+                <p><strong>Income Tax PAN:</strong> {{ employee.pan_number|default:"ABCDE1234F (Verified)" }}</p>
+                <p><strong>UAN / PF Number:</strong> <code>{{ uan_number }}</code></p>
+                <p><strong>Pay Period:</strong> {{ payment.month_year_label }} ({{ paid_days }} Days)</p>
+            </div>
+        </div>
+
+        <!-- Formal Subject & Letter Salutation -->
+        <div class="letter-subject">
+            SUBJECT: MONTHLY SALARY SLIP / STATEMENT OF REMUNERATION FOR {{ payment.month_year_label|upper }}
+        </div>
+        <p class="letter-body-intro">
+            Dear {{ employee.full_name }},<br>
+            Please find below your official monthly statement of remuneration, statutory contributions, and net compensation for the pay period of <strong>{{ payment.month_year_label }}</strong>. The net take-home salary has been directly credited into your designated bank account via Direct Electronic Transfer.
+        </p>
+
+        <!-- Earnings vs Deductions Table -->
+        <table class="statement-table">
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Earnings Component</th>
+                    <th style="width: 15%; text-align: right;">Amount (₹)</th>
+                    <th style="width: 20%; border-left: 2px solid #334155;">Statutory Deductions</th>
+                    <th style="width: 15%; text-align: right;">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Basic Monthly Salary</td>
+                    <td style="text-align: right; font-weight: 600;">₹{{ payment.basic_salary|floatformat:2 }}</td>
+                    <td style="border-left: 1px solid #e2e8f0;">Employees' Provident Fund (EPF)</td>
+                    <td style="text-align: right; color: #ef4444; font-weight: 600;">₹{{ employee.pf_deduction|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>House Rent Allowance (HRA)</td>
+                    <td style="text-align: right; font-weight: 600;">₹{{ employee.hra|floatformat:2 }}</td>
+                    <td style="border-left: 1px solid #e2e8f0;">Tax Deducted at Source (TDS)</td>
+                    <td style="text-align: right; color: #ef4444; font-weight: 600;">₹{{ employee.tax_deduction|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Medical & Health Allowance</td>
+                    <td style="text-align: right; font-weight: 600;">₹{{ employee.medical_allowance|floatformat:2 }}</td>
+                    <td style="border-left: 1px solid #e2e8f0;">Professional Tax (PT)</td>
+                    <td style="text-align: right; color: #ef4444; font-weight: 600;">₹0.00</td>
+                </tr>
+                <tr>
+                    <td>Conveyance & Travel Allowance</td>
+                    <td style="text-align: right; font-weight: 600;">₹{{ employee.conveyance_allowance|floatformat:2 }}</td>
+                    <td style="border-left: 1px solid #e2e8f0;">Other Deductions</td>
+                    <td style="text-align: right; color: #ef4444; font-weight: 600;">₹0.00</td>
+                </tr>
+                {% if payment.bonus > 0 %}
+                <tr>
+                    <td style="color: #166534; font-weight: 600;">Performance Bonus / Incentives</td>
+                    <td style="text-align: right; color: #166534; font-weight: 700;">+ ₹{{ payment.bonus|floatformat:2 }}</td>
+                    <td style="border-left: 1px solid #e2e8f0;">-</td>
+                    <td style="text-align: right;">-</td>
+                </tr>
+                {% endif %}
+                <tr class="total-subrow">
+                    <td>Total Gross Earnings (A)</td>
+                    <td style="text-align: right; color: #166534;">₹{{ gross_earnings|floatformat:2 }}</td>
+                    <td style="border-left: 1px solid #cbd5e1;">Total Statutory Deductions (B)</td>
+                    <td style="text-align: right; color: #dc2626;">- ₹{{ payment.deductions|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Net Take Home Remuneration Highlight Banner -->
+        <div class="net-remuneration-card">
+            <div>
+                <div class="net-label">Net Disbursed Take-Home Salary (A - B)</div>
+                <div class="net-words"><strong>In Words:</strong> {{ amount_in_words }}</div>
+            </div>
+            <div class="net-value">
+                ₹{{ payment.net_paid|floatformat:2 }}
+            </div>
+        </div>
+
+        <!-- Electronic Banking Transaction Audit Trail -->
+        <div class="txn-audit-box">
+            <div>
+                <strong>Electronic UTR / Txn Reference:</strong><br>
+                <code>{{ payment.transaction_id }}</code>
+            </div>
+            <div>
+                <strong>Disbursement Value Date:</strong><br>
+                {{ payment.payment_date|date:"d M Y" }}
+            </div>
+            <div>
+                <strong>Settlement Mode:</strong><br>
+                {{ payment.get_payment_method_display }}
+            </div>
+            <div>
+                <strong>Disbursement Authorized By:</strong><br>
+                {{ authorized_by_name }}
+            </div>
+        </div>
+
+        <!-- Corporate Sign-Off, Official Stamp & Acknowledgment -->
+        <div class="letter-signoff-section">
+            <div class="sign-box">
+                <div class="sign-line"></div>
+                <div style="font-weight: 700; font-size: 0.85rem; color: #0b1a2c;">{{ authorized_by_name }}</div>
+                <div style="font-size: 0.75rem; color: #64748b;">Director of Corporate Finance & Operations</div>
+                <div style="font-size: 0.72rem; color: #64748b;">FinCorp Global Enterprises Pvt. Ltd.</div>
+            </div>
+
+            <div class="corporate-stamp">
+                ★ FINCORP GLOBAL ENTERPRISES ★<br>
+                CORPORATE PAYROLL DIVISION<br>
+                OFFICIALLY AUDITED & CERTIFIED
+            </div>
+
+            <div class="sign-box" style="text-align: right;">
+                <div class="sign-line"></div>
+                <div style="font-weight: 700; font-size: 0.85rem; color: #0b1a2c;">{{ employee.full_name }}</div>
+                <div style="font-size: 0.75rem; color: #64748b;">Employee Code: {{ employee.emp_code }}</div>
+                <div style="font-size: 0.72rem; color: #64748b;">Acknowledged & Digitally Archived</div>
+            </div>
+        </div>
+
+        <!-- Formal Legal Compliance Notice -->
+        <div class="legal-notice-footer">
+            This document constitutes a confidential and official Statement of Remuneration issued by FinCorp Global Enterprises Private Limited under Section 192 of the Income Tax Act, 1961. It is electronically generated and certified by Corporate Payroll Administration. Any inquiries or adjustments regarding this advice should be submitted to <strong>payroll@fincorp.com</strong> within seven (7) working days of issuance.
+        </div>
+
+    </div>
+
+</body>
+</html>

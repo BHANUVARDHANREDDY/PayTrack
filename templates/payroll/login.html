@@ -1,0 +1,60 @@
+{% extends "payroll/base.html" %}
+
+{% block title %}Sign In - FinCorp Finance Portal{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 3rem auto;">
+    <div class="card" style="box-shadow: var(--shadow-lg);">
+        <div class="card-header" style="text-align: center; display: block; padding: 2rem 1.5rem 1rem 1.5rem; border-bottom: none;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">Finance Department Login</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Sign in to access Manager or Employee services</p>
+        </div>
+
+        <div class="card-body" style="padding: 1.5rem 2rem 2rem 2rem;">
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 0.4rem;">
+                        Username
+                    </label>
+                    <input type="text" name="username" id="usernameInput" class="form-input" required style="width: 100%;" placeholder="e.g. manager or emp1">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 0.4rem;">
+                        Password
+                    </label>
+                    <input type="password" name="password" id="passwordInput" class="form-input" required style="width: 100%;" placeholder="Enter password">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; font-size: 1rem;">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Quick Demo Credentials Box -->
+            <div style="margin-top: 2rem; padding: 1.25rem; background: #f8fafc; border-radius: var(--radius-sm); border: 1px dashed var(--border-color);">
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; text-align: center;">
+                    ⚡ One-Click Test Accounts
+                </div>
+                <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCredentials('manager', 'password123')" style="font-size: 0.8rem;">
+                        👔 Manager (1st URL)
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="fillCredentials('emp1', 'password123')" style="font-size: 0.8rem;">
+                        🧑‍💻 Employee (2nd URL)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillCredentials(u, p) {
+    document.getElementById('usernameInput').value = u;
+    document.getElementById('passwordInput').value = p;
+}
+</script>
+{% endblock %}

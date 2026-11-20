@@ -1,0 +1,161 @@
+{% extends "payroll/employee_base.html" %}
+{% load static %}
+
+{% block title %}Attendance Records - {{ employee.full_name }} - Finance Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header Area Matching Uploaded Layout -->
+<div class="top-header">
+    <div class="top-header-title">
+        <h1>Attendance records</h1>
+        <p>November 2026 attendance tracking, presence percentage, and swipe records</p>
+    </div>
+    <div class="payroll-month-selector">
+        <label>Selected month</label>
+        <select class="search-input" style="padding: 0.45rem 1rem; font-weight: 600;">
+            <option selected>November 2026</option>
+            <option>October 2026</option>
+            <option>September 2026</option>
+        </select>
+    </div>
+</div>
+
+<!-- 4 Concise KPI Cards Row -->
+<div class="manager-stats-grid" style="margin-bottom: 1.5rem;">
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Present days</div>
+        <div class="dash-stat-val" style="color: #166534;">{{ stat_present }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Approved leave</div>
+        <div class="dash-stat-val" style="color: #ea580c;">{{ stat_leave }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Unexcused absent</div>
+        <div class="dash-stat-val" style="color: #dc2626;">{{ stat_absent }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Monthly attendance rate</div>
+        <div class="dash-stat-val" style="color: #0b1a2c;">{{ attendance_rate }}%</div>
+    </div>
+</div>
+
+<!-- Main 2-Column Section: Calendar Visualizer & Leave Balances -->
+<div class="employee-top-grid">
+    <!-- Left Card: Attendance, November 2026 Calendar Grid -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <h2 class="card-heading" style="margin-bottom: 1rem;">Attendance, November 2026</h2>
+
+        <div class="attend-stats-top">
+            <div class="attend-stat-box">
+                <div class="count">{{ stat_present }}</div>
+                <div class="label">Present</div>
+            </div>
+            <div class="attend-stat-box">
+                <div class="count">{{ stat_leave }}</div>
+                <div class="label">Leave</div>
+            </div>
+            <div class="attend-stat-box">
+                <div class="count">{{ stat_absent }}</div>
+                <div class="label">Absent</div>
+            </div>
+        </div>
+
+        <!-- 7-Column Calendar Grid -->
+        <div class="calendar-grid">
+            <div class="cal-header">Sun</div>
+            <div class="cal-header">Mon</div>
+            <div class="cal-header">Tue</div>
+            <div class="cal-header">Wed</div>
+            <div class="cal-header">Thu</div>
+            <div class="cal-header">Fri</div>
+            <div class="cal-header">Sat</div>
+
+            {% for item in calendar_days %}
+                <div class="cal-day {{ item.type }}">{{ item.day }}</div>
+            {% endfor %}
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+        </div>
+
+        <div class="cal-legend-footer">
+            Light green: present &nbsp;&nbsp; Orange: leave &nbsp;&nbsp; Dark red: absent &nbsp;&nbsp; Grey: weekly off
+        </div>
+    </div>
+
+    <!-- Right Card: Leave Balances & Policy Compliance -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <h3 class="card-heading" style="margin-bottom: 1.25rem;">Leave Balances & Compliance</h3>
+
+        <div style="margin-bottom: 1.25rem;">
+            <div class="detail-row" style="margin-bottom: 0.65rem;">
+                <span class="detail-label" style="width: 160px;">Casual Leave (CL)</span>
+                <span class="detail-value">{{ leave_balances.casual }}</span>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.65rem;">
+                <span class="detail-label" style="width: 160px;">Sick Leave (SL)</span>
+                <span class="detail-value">{{ leave_balances.sick }}</span>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.65rem;">
+                <span class="detail-label" style="width: 160px;">Privilege Leave (PL)</span>
+                <span class="detail-value">{{ leave_balances.privilege }}</span>
+            </div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid var(--card-border); padding: 1.15rem; border-radius: 8px; margin-top: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">
+                Corporate Attendance Policy
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                A minimum of 85% verified presence is mandatory for prompt monthly payroll disbursement. Unplanned absences must be formalized via HR portal within 48 hours.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section: Daily Attendance Logs -->
+<div class="content-card" style="margin-top: 1.5rem;">
+    <div class="card-top-bar">
+        <h3 class="card-heading">Daily Attendance Log</h3>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">Showing {{ daily_logs|length }} business days</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="design-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Duration</th>
+                    <th style="text-align: right;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in daily_logs %}
+                <tr>
+                    <td style="font-weight: 600;">{{ log.date }}</td>
+                    <td style="color: var(--text-secondary);">{{ log.day }}</td>
+                    <td><code>{{ log.in_time }}</code></td>
+                    <td><code>{{ log.out_time }}</code></td>
+                    <td style="font-weight: 500;">{{ log.hours }}</td>
+                    <td style="text-align: right;">
+                        {% if log.badge == 'present' %}
+                            <span class="pill-badge done">{{ log.status }}</span>
+                        {% elif log.badge == 'leave' %}
+                            <span class="pill-badge" style="background-color: #ffedd5; color: #9a3412;">{{ log.status }}</span>
+                        {% else %}
+                            <span class="pill-badge pending">{{ log.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

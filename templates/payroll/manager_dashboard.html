@@ -1,0 +1,281 @@
+{% extends "payroll/manager_base.html" %}
+{% load static %}
+
+{% block title %}Manager Dashboard - Finance Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header Area Matching Uploaded Layout -->
+<div class="top-header">
+    <div class="top-header-title">
+        <h1>Manager dashboard</h1>
+        <p>Sample data for layout</p>
+    </div>
+    <div class="payroll-month-selector">
+        <label>Payroll month</label>
+        <form method="GET" action="{% url 'manager_portal' %}" id="monthFilterForm">
+            <select name="month" onchange="document.getElementById('monthFilterForm').submit()">
+                <option value="11" selected>November 2026</option>
+                <option value="10">October 2026</option>
+                <option value="9">September 2026</option>
+                <option value="8">August 2026</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- 4 Stat Cards Row -->
+<div class="manager-stats-grid">
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Total employees</div>
+        <div class="dash-stat-val">{{ stat_total_employees }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Present today</div>
+        <div class="dash-stat-val">{{ stat_present_today }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">On leave</div>
+        <div class="dash-stat-val">{{ stat_on_leave }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Payroll this month</div>
+        <div class="dash-stat-val">{{ stat_payroll_month }}</div>
+    </div>
+</div>
+
+<!-- Main 2-Column Grid (Employees Table & Monthly Salary Payout) -->
+<div class="manager-main-grid">
+    <!-- Left Column: Employees Table -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <div class="card-top-bar">
+            <h2 class="card-heading">Employees</h2>
+            <div class="card-top-actions">
+                <input type="text" id="employeeSearchInput" class="search-input" placeholder="Search name or ID">
+                <button type="button" class="btn-primary-green" id="openAddEmpModal">
+                    Add employee
+                </button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="design-table">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Attendance</th>
+                        <th>Net salary</th>
+                        <th style="text-align: right; width: 80px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    {% for row in payroll_table %}
+                    <tr class="searchable-row" data-emp-id="{{ row.employee.id }}">
+                        <td>{{ row.employee.emp_code }}</td>
+                        <td style="font-weight: 500;">{{ row.employee.full_name }}</td>
+                        <td style="color: #4b5563;">{{ row.employee.department.name|default:"General" }}</td>
+                        <td style="color: #4b5563;">{{ row.employee.attendance_percentage }}%</td>
+                        <td style="font-weight: 600;">₹{{ row.net_salary|floatformat:0 }}</td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'manager_employee_detail_page' row.employee.id %}" class="table-link">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                            No employees found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right Column: Monthly Salary Payout & Today's Attendance -->
+    <div>
+        <!-- Monthly Salary Payout Card -->
+        <div class="content-card" style="margin-bottom: 1.5rem;">
+            <h3 class="card-heading" style="margin-bottom: 1.25rem;">Monthly salary payout</h3>
+
+            <div class="payout-steps-list">
+                <div class="payout-step-item">
+                    <div class="step-label">
+                        <span class="step-num">1</span>
+                        <span>Attendance verified</span>
+                    </div>
+                    <span class="pill-badge done">Done</span>
+                </div>
+
+                <div class="payout-step-item">
+                    <div class="step-label">
+                        <span class="step-num">2</span>
+                        <span>Salaries calculated</span>
+                    </div>
+                    <span class="pill-badge done">Done</span>
+                </div>
+
+                <div class="payout-step-item">
+                    <div class="step-label">
+                        <span class="step-num {% if pending_count == 0 %}done{% else %}pending{% endif %}">3</span>
+                        <span>Manager approval</span>
+                    </div>
+                    {% if pending_count == 0 %}
+                        <span class="pill-badge done">Done</span>
+                    {% else %}
+                        <span class="pill-badge pending">Pending</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="total-payable-label">Total payable</div>
+            <div class="total-payable-amount">{{ stat_payroll_month }}</div>
+
+            <form method="POST" action="{% url 'process_bulk_payment' %}">
+                {% csrf_token %}
+                <input type="hidden" name="month" value="11">
+                <input type="hidden" name="year" value="2026">
+                <button type="submit" class="btn-primary-green" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px;">
+                    {% if pending_count == 0 %}
+                        Salaries Approved & Disbursed ✓
+                    {% else %}
+                        Approve and run payout
+                    {% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Today's Attendance Card -->
+        <div class="content-card">
+            <h3 class="card-heading" style="margin-bottom: 1rem;">Today's attendance</h3>
+
+            <div class="attendance-bar">
+                <div class="bar-present" style="width: 87.5%;"></div>
+                <div class="bar-leave" style="width: 8.3%;"></div>
+                <div class="bar-absent" style="width: 4.2%;"></div>
+            </div>
+
+            <div class="attendance-legend">
+                <span><strong>{{ stat_present_today }}</strong> present</span>
+                <span><strong>{{ stat_on_leave }}</strong> on leave</span>
+                <span><strong>{{ stat_absent }}</strong> absent</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: EMPLOYEE PAYROLL DETAILS                          -->
+<!-- ======================================================== -->
+<div class="modal" id="employeePayrollDetailModal">
+    <div class="modal-dialog" style="max-width: 680px;">
+        <div class="modal-header">
+            <div>
+                <h3 class="modal-title" id="detailEmpName">Anita Rao</h3>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.15rem;">
+                    <span id="detailEmpCode">E-101</span> • <span id="detailEmpDesig">Python Developer</span> • <span id="detailEmpDept">Engineering</span>
+                </p>
+            </div>
+            <button type="button" class="modal-close" id="closeDetailModal">&times;</button>
+        </div>
+
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="background: #f8fafc; border: 1px solid var(--card-border); padding: 1rem; border-radius: 8px;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Gross Monthly Salary</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);" id="detailEmpGross">₹66,500</div>
+                </div>
+                <div style="background: #f8fafc; border: 1px solid var(--card-border); padding: 1rem; border-radius: 8px;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Net Take-Home Salary</div>
+                    <div style="font-size: 1.4rem; font-weight: 800; color: var(--btn-green);" id="detailEmpNetPay">₹62,000</div>
+                </div>
+            </div>
+
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Compensation Structure</h4>
+            <table class="design-table" style="margin-bottom: 1.25rem; font-size: 0.85rem;">
+                <tbody>
+                    <tr><td>Basic Salary</td><td style="text-align: right; font-weight: 600;" id="detailEmpBasic">₹45,000</td></tr>
+                    <tr><td>House Rent Allowance (HRA)</td><td style="text-align: right; font-weight: 600;" id="detailEmpHra">₹15,000</td></tr>
+                    <tr><td>Medical & Travel Allowance</td><td style="text-align: right; font-weight: 600;" id="detailEmpMed">₹6,500</td></tr>
+                    <tr><td style="color: #ef4444;">Total Deductions (PF + Tax)</td><td style="text-align: right; color: #ef4444; font-weight: 600;" id="detailEmpDeductions">-₹4,500</td></tr>
+                </tbody>
+            </table>
+
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Recent Payslips</h4>
+            <table class="design-table" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Net Paid</th>
+                        <th>Method</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="detailEmpPaymentHistoryBody">
+                    <!-- Populated dynamically via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-primary-green" id="closeDetailBtn">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: ADD EMPLOYEE                                      -->
+<!-- ======================================================== -->
+<div class="modal" id="addEmployeeModal">
+    <div class="modal-dialog" style="max-width: 550px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Employee</h3>
+            <button type="button" class="modal-close" id="closeAddEmpModal">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'add_employee' %}">
+            {% csrf_token %}
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Full Name *</label>
+                    <input type="text" name="first_name" class="search-input" style="width: 100%;" required placeholder="e.g. Rahul Sharma">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Username *</label>
+                        <input type="text" name="username" class="search-input" style="width: 100%;" required placeholder="e.g. rahul">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Employee ID *</label>
+                        <input type="text" name="emp_code" class="search-input" style="width: 100%;" required placeholder="e.g. E-106">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Department</label>
+                        <select name="department" class="search-input" style="width: 100%;">
+                            {% for d in departments %}
+                                <option value="{{ d.id }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Designation</label>
+                        <input type="text" name="designation" class="search-input" style="width: 100%;" placeholder="e.g. Developer">
+                    </div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Monthly Net Salary (₹) *</label>
+                    <input type="number" step="0.01" name="basic_salary" class="search-input" style="width: 100%;" value="50000" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="search-input" style="background: transparent; border: 1px solid #d1d5db; cursor: pointer;" id="cancelAddEmpBtn">Cancel</button>
+                <button type="submit" class="btn-primary-green">Save Employee</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

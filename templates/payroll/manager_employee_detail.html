@@ -1,0 +1,369 @@
+{% extends "payroll/manager_base.html" %}
+{% load static %}
+
+{% block title %}{{ employee.full_name }} ({{ employee.emp_code }}) - Employee Dossier - Manager Portal{% endblock %}
+
+{% block content %}
+<!-- Top Navigation Breadcrumb -->
+<div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+    <a href="{% url 'manager_employees' %}" class="table-link" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 700;">
+        &larr; Back to Employee Directory
+    </a>
+    <div style="display: flex; gap: 0.75rem;">
+        {% if not is_current_month_paid %}
+        <form method="POST" action="{% url 'process_single_payment' %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="employee_id" value="{{ employee.id }}">
+            <input type="hidden" name="month" value="11">
+            <input type="hidden" name="year" value="2026">
+            <button type="submit" class="btn-primary-green" style="padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700;">
+                💳 Pay November 2026 Salary (₹{{ employee.net_salary|floatformat:0 }})
+            </button>
+        </form>
+        {% else %}
+        <span class="pill-badge done" style="font-size: 0.85rem; padding: 0.45rem 1rem;">
+            ✓ November 2026 Salary Disbursed
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Employee Hero Header Card -->
+<div class="content-card" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: #0b1a2c; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 800;">
+            {{ employee.full_name|slice:":1" }}
+        </div>
+        <div>
+            <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.25rem 0;">
+                {{ employee.full_name }}
+            </h1>
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.9rem; color: var(--text-secondary);">
+                <span><strong>ID:</strong> <code style="font-size: 0.9rem;">{{ employee.emp_code }}</code></span>
+                <span>•</span>
+                <span>{{ employee.designation }}</span>
+                <span>•</span>
+                <span>{{ employee.department.name|default:"General Finance" }}</span>
+                <span>•</span>
+                <span>Joined {{ employee.joining_date|date:"d M Y" }}</span>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: right;">
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Net Monthly Remuneration</div>
+        <div style="font-size: 1.65rem; font-weight: 800; color: var(--btn-green);">₹{{ employee.net_salary|floatformat:0 }}</div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- SECTION 1: COMPREHENSIVE EMPLOYEE PROFILE                -->
+<!-- ======================================================== -->
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        <span style="font-size: 1.25rem;">👤</span>
+        <h2 class="card-heading" style="margin: 0;">1. Comprehensive Employee Profile</h2>
+    </div>
+
+    <div class="employee-top-grid">
+        <!-- Personal & Employment Details -->
+        <div class="content-card" style="margin-bottom: 0;">
+            <h3 class="card-heading" style="margin-bottom: 1.25rem; font-size: 1.05rem;">Employment & Work Particulars</h3>
+
+            <div class="detail-row">
+                <span class="detail-label">Employee ID</span>
+                <span class="detail-value"><code>{{ employee.emp_code }}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value">{{ employee.full_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Department</span>
+                <span class="detail-value">{{ employee.department.name|default:"General Finance" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Designation</span>
+                <span class="detail-value">{{ employee.designation }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Work Email</span>
+                <span class="detail-value">{{ employee.work_email }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Reporting Manager</span>
+                <span class="detail-value">{{ reporting_manager }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Work Location</span>
+                <span class="detail-value">{{ work_location }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Shift Hours</span>
+                <span class="detail-value">{{ shift_hours }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date of Joining</span>
+                <span class="detail-value">{{ employee.joining_date|date:"d M Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value"><span class="pill-badge done">Active Employee</span></span>
+            </div>
+        </div>
+
+        <!-- Banking & Statutory Tax Profile -->
+        <div class="content-card" style="margin-bottom: 0;">
+            <h3 class="card-heading" style="margin-bottom: 1.25rem; font-size: 1.05rem;">Banking & Statutory Identifiers</h3>
+
+            <div class="detail-row">
+                <span class="detail-label">Bank Name</span>
+                <span class="detail-value">{{ employee.bank_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Number</span>
+                <span class="detail-value"><code>{{ employee.account_number }}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">IFSC Code</span>
+                <span class="detail-value"><code>{{ employee.ifsc_code }}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Income Tax PAN</span>
+                <span class="detail-value">{{ employee.pan_number|default:"ABCDE1234F (Verified)" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Universal A/C (UAN)</span>
+                <span class="detail-value"><code>{{ uan_number }}</code></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Disbursement Mode</span>
+                <span class="detail-value">Direct Bank Deposit (NEFT/RTGS)</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Tax Regime</span>
+                <span class="detail-value">New Tax Regime (Section 115BAC)</span>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--card-border); padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.2rem;">Lifetime Disbursed to Date</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: #0b1a2c;">₹{{ total_paid_lifetime|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- SECTION 2: DAILY ATTENDANCE RECORDS                      -->
+<!-- ======================================================== -->
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        <span style="font-size: 1.25rem;">📅</span>
+        <h2 class="card-heading" style="margin: 0;">2. Daily Attendance Records (November 2026)</h2>
+    </div>
+
+    <!-- 4 Attendance Metric Cards -->
+    <div class="manager-stats-grid" style="margin-bottom: 1.25rem;">
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Present Days</div>
+            <div class="dash-stat-val" style="color: #166534;">{{ stat_present }}</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Approved Leave</div>
+            <div class="dash-stat-val" style="color: #ea580c;">{{ stat_leave }}</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Unexcused Absent</div>
+            <div class="dash-stat-val" style="color: #dc2626;">{{ stat_absent }}</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Monthly Attendance Rate</div>
+            <div class="dash-stat-val" style="color: #0b1a2c;">{{ attendance_rate }}%</div>
+        </div>
+    </div>
+
+    <!-- Calendar Visualizer Card -->
+    <div class="content-card" style="margin-bottom: 1.25rem;">
+        <h3 class="card-heading" style="margin-bottom: 1rem; font-size: 1.05rem;">November 2026 Attendance Calendar</h3>
+
+        <div class="calendar-grid">
+            <div class="cal-header">Sun</div>
+            <div class="cal-header">Mon</div>
+            <div class="cal-header">Tue</div>
+            <div class="cal-header">Wed</div>
+            <div class="cal-header">Thu</div>
+            <div class="cal-header">Fri</div>
+            <div class="cal-header">Sat</div>
+
+            {% for item in calendar_days %}
+                <div class="cal-day {{ item.type }}">{{ item.day }}</div>
+            {% endfor %}
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+            <div class="cal-day future" style="visibility: hidden;"></div>
+        </div>
+
+        <div class="cal-legend-footer">
+            Light green: present &nbsp;&nbsp; Orange: leave (12th) &nbsp;&nbsp; Dark red: absent (18th) &nbsp;&nbsp; Grey: weekly off
+        </div>
+    </div>
+
+    <!-- Daily Attendance Logs Table -->
+    <div class="content-card">
+        <h3 class="card-heading" style="margin-bottom: 1rem; font-size: 1.05rem;">Daily Swipe & Presence Log</h3>
+
+        <div style="overflow-x: auto;">
+            <table class="design-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Duration</th>
+                        <th style="text-align: right;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in daily_logs %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ log.date }}</td>
+                        <td style="color: var(--text-secondary);">{{ log.day }}</td>
+                        <td><code>{{ log.in_time }}</code></td>
+                        <td><code>{{ log.out_time }}</code></td>
+                        <td style="font-weight: 500;">{{ log.hours }}</td>
+                        <td style="text-align: right;">
+                            {% if log.badge == 'present' %}
+                                <span class="pill-badge done">{{ log.status }}</span>
+                            {% elif log.badge == 'leave' %}
+                                <span class="pill-badge" style="background-color: #ffedd5; color: #9a3412;">{{ log.status }}</span>
+                            {% else %}
+                                <span class="pill-badge pending">{{ log.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- SECTION 3: DETAILED PAYROLL INFORMATION                  -->
+<!-- ======================================================== -->
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        <span style="font-size: 1.25rem;">💰</span>
+        <h2 class="card-heading" style="margin: 0;">3. Detailed Payroll & Compensation Information</h2>
+    </div>
+
+    <!-- Compensation Breakdown Table -->
+    <div class="content-card" style="margin-bottom: 1.5rem;">
+        <h3 class="card-heading" style="margin-bottom: 1rem; font-size: 1.05rem;">Monthly Remuneration Structure</h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Earnings Ledger -->
+            <div>
+                <h4 style="font-size: 0.9rem; font-weight: 700; color: #166534; margin-bottom: 0.75rem; text-transform: uppercase;">
+                    Earnings Component
+                </h4>
+                <table class="design-table">
+                    <tbody>
+                        <tr><td>Basic Salary</td><td style="text-align: right; font-weight: 600;">₹{{ employee.basic_salary|floatformat:2 }}</td></tr>
+                        <tr><td>House Rent Allowance (HRA)</td><td style="text-align: right; font-weight: 600;">₹{{ employee.hra|floatformat:2 }}</td></tr>
+                        <tr><td>Medical Allowance</td><td style="text-align: right; font-weight: 600;">₹{{ employee.medical_allowance|floatformat:2 }}</td></tr>
+                        <tr><td>Conveyance Allowance</td><td style="text-align: right; font-weight: 600;">₹{{ employee.conveyance_allowance|floatformat:2 }}</td></tr>
+                        <tr style="background: #f0fdf4; font-weight: 700;">
+                            <td style="color: #166534;">Total Gross Earnings (A)</td>
+                            <td style="text-align: right; color: #166534;">₹{{ employee.gross_salary|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Deductions Ledger -->
+            <div>
+                <h4 style="font-size: 0.9rem; font-weight: 700; color: #dc2626; margin-bottom: 0.75rem; text-transform: uppercase;">
+                    Statutory Deductions
+                </h4>
+                <table class="design-table">
+                    <tbody>
+                        <tr><td>Provident Fund (EPF)</td><td style="text-align: right; color: #ef4444; font-weight: 600;">₹{{ employee.pf_deduction|floatformat:2 }}</td></tr>
+                        <tr><td>Income Tax (TDS)</td><td style="text-align: right; color: #ef4444; font-weight: 600;">₹{{ employee.tax_deduction|floatformat:2 }}</td></tr>
+                        <tr><td>Professional Tax (PT)</td><td style="text-align: right; color: #ef4444; font-weight: 600;">₹0.00</td></tr>
+                        <tr><td>Other Withholdings</td><td style="text-align: right; color: #ef4444; font-weight: 600;">₹{{ employee.other_deductions|floatformat:2 }}</td></tr>
+                        <tr style="background: #fef2f2; font-weight: 700;">
+                            <td style="color: #dc2626;">Total Statutory Deductions (B)</td>
+                            <td style="text-align: right; color: #dc2626;">-₹{{ employee.total_deductions|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Net Take Home Banner -->
+        <div style="background: #f0fdf4; border: 2px solid #16a34a; border-radius: 8px; padding: 1.25rem 1.75rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #166534; text-transform: uppercase;">
+                    Net Disbursed Take-Home Salary (A - B)
+                </div>
+                <div style="font-size: 0.85rem; color: #14532d; margin-top: 0.25rem;">
+                    <strong>In Words:</strong> {{ amount_in_words }}
+                </div>
+            </div>
+            <div style="font-size: 2rem; font-weight: 800; color: #15803d;">
+                ₹{{ employee.net_salary|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Historical Payslips Archive Table -->
+    <div class="content-card">
+        <div class="card-top-bar">
+            <h3 class="card-heading" style="font-size: 1.05rem;">Disbursed Payslips & Payment History</h3>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">{{ payments|length }} payment records</span>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="design-table">
+                <thead>
+                    <tr>
+                        <th>Pay Period</th>
+                        <th>Disbursed Date</th>
+                        <th>Net Paid</th>
+                        <th>Payment Mode</th>
+                        <th>Transaction Reference / UTR</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td style="font-weight: 700; color: var(--text-primary);">{{ p.month_year_label }}</td>
+                        <td style="color: var(--text-secondary);">{{ p.payment_date|date:"d M Y" }}</td>
+                        <td style="font-weight: 700; color: #166534;">₹{{ p.net_paid|floatformat:0 }}</td>
+                        <td><span style="font-size: 0.82rem; color: #475569;">{{ p.get_payment_method_display }}</span></td>
+                        <td><code style="font-size: 0.8rem; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px;">{{ p.transaction_id }}</code></td>
+                        <td><span class="pill-badge done">Paid</span></td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'view_payslip' p.id %}" target="_blank" class="btn-primary-green" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; text-decoration: none; border-radius: 6px;">
+                                📄 View Letter
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                            No historical payslip records found for this employee.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

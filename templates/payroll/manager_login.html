@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Sign In - Finance Portal</title>
+    <link rel="stylesheet" href="{% static 'payroll/css/style.css' %}">
+</head>
+<body style="background: #f3f4f6; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+
+    <div style="width: 100%; max-width: 440px;">
+        <!-- Header Branding -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="display: inline-block; background: #0b1a2c; color: #ffffff; padding: 0.4rem 1.25rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.75rem;">
+                1ST URL &bull; MANAGER EXCLUSIVE
+            </div>
+            <h1 style="font-size: 1.85rem; font-weight: 800; color: #0b1a2c; margin: 0 0 0.5rem 0;">
+                Manager Portal
+            </h1>
+            <p style="color: #64748b; font-size: 0.9rem; margin: 0;">
+                Executive financial control, employee roster & monthly salary disbursal
+            </p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Login Card -->
+        <div class="content-card" style="box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); border-radius: 12px; padding: 2.25rem;">
+            <form method="POST" action="{% url 'manager_login' %}">
+                {% csrf_token %}
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #0f172a; margin-bottom: 0.4rem;">
+                        Manager Username
+                    </label>
+                    <input type="text" name="username" id="managerUserInput" class="search-input" style="width: 100%;" required placeholder="manager" value="manager">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #0f172a; margin-bottom: 0.4rem;">
+                        Password
+                    </label>
+                    <input type="password" name="password" id="managerPassInput" class="search-input" style="width: 100%;" required placeholder="password123" value="password123">
+                </div>
+
+                <button type="submit" class="btn-primary-green" style="width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px;">
+                    Sign In to Manager Dashboard &rarr;
+                </button>
+            </form>
+
+            <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; text-align: center;">
+                <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 0.5rem 0;">
+                    Looking for the Employee Portal?
+                </p>
+                <a href="{% url 'employee_portal' %}" class="table-link" style="font-weight: 700; font-size: 0.85rem;">
+                    Go to Employee Portal (2nd URL) &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

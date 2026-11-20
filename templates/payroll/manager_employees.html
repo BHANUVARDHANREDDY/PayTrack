@@ -1,0 +1,250 @@
+{% extends "payroll/manager_base.html" %}
+{% load static %}
+
+{% block title %}Employee Directory - Manager Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header Area Matching Uploaded Layout -->
+<div class="top-header">
+    <div class="top-header-title">
+        <h1>Employee Directory</h1>
+        <p>Visual staff directory with attendance standing, profile details, and compensation packages</p>
+    </div>
+    <div class="card-top-actions">
+        <input type="text" id="employeeSearchInput" class="search-input" placeholder="Search name, ID or department" style="min-width: 260px;">
+        <button type="button" class="btn-primary-green" id="openAddEmpModal">
+            + Add Employee
+        </button>
+    </div>
+</div>
+
+<!-- 4 Executive KPI Metric Cards -->
+<div class="manager-stats-grid" style="margin-bottom: 1.5rem;">
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Total employees</div>
+        <div class="dash-stat-val">{{ total_employees }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Departments</div>
+        <div class="dash-stat-val">{{ total_departments }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Average attendance</div>
+        <div class="dash-stat-val" style="color: var(--btn-green);">94%</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Monthly payroll commitment</div>
+        <div class="dash-stat-val" style="color: #0b1a2c;">₹20,40,000</div>
+    </div>
+</div>
+
+<!-- Visual Employee Cards Grid -->
+<div style="margin-bottom: 2rem;">
+    <h2 class="card-heading" style="margin-bottom: 1rem;">Visual Staff Directory</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;" id="visualEmployeeGrid">
+        {% for item in employee_list %}
+        <div class="content-card searchable-card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.15s ease, box-shadow 0.15s ease;" data-name="{{ item.employee.full_name|lower }}" data-code="{{ item.employee.emp_code|lower }}" data-dept="{{ item.employee.department.name|lower|default:'' }}">
+            <!-- Card Header: Avatar, Name & Status -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #0b1a2c; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem;">
+                            {{ item.employee.full_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">
+                                {{ item.employee.full_name }}
+                            </div>
+                            <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.1rem;">
+                                <code style="font-weight: 700; color: #0b1a2c;">{{ item.employee.emp_code }}</code> &bull; {{ item.employee.designation }}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="pill-badge done" style="font-size: 0.75rem;">Active</span>
+                </div>
+
+                <!-- Department & Contact -->
+                <div style="background: #f8fafc; border: 1px solid var(--card-border); padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                        <span style="color: var(--text-secondary);">Department:</span>
+                        <strong>{{ item.employee.department.name|default:"General" }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary);">Email:</span>
+                        <span style="color: #4b5563;">{{ item.employee.work_email }}</span>
+                    </div>
+                </div>
+
+                <!-- Visual Metrics: Attendance & Net Pay -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+                    <div style="background: #f1f5f9; padding: 0.65rem 0.85rem; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.15rem;">Attendance</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #166534;">{{ item.attendance }}%</div>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 0.65rem 0.85rem; border-radius: 6px;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.15rem;">Net Salary</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--btn-green);">₹{{ item.net_salary|floatformat:0 }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Action Footer with Prominent 'View' Button -->
+            <div style="padding-top: 0.75rem; border-top: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">
+                    {% if item.is_paid %}
+                        <span style="color: #166534; font-weight: 600;">● Nov 2026 Paid</span>
+                    {% else %}
+                        <span style="color: #ea580c; font-weight: 600;">○ Nov 2026 Pending</span>
+                    {% endif %}
+                </span>
+                <a href="{{ item.detail_url }}" class="btn-primary-green" style="padding: 0.45rem 1.15rem; font-size: 0.85rem; text-decoration: none; border-radius: 6px; font-weight: 700;">
+                    View &rarr;
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Visual Table View with 'View' Button Next to Each Name -->
+<div class="content-card">
+    <div class="card-top-bar">
+        <h3 class="card-heading">Master Employee Table</h3>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">Showing {{ employee_list|length }} employees</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="design-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Attendance</th>
+                    <th>Monthly Net Salary</th>
+                    <th>Status</th>
+                    <th style="text-align: right; width: 120px;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="employeeTableBody">
+                {% for item in employee_list %}
+                <tr class="searchable-row" data-emp-id="{{ item.employee.id }}">
+                    <td><code style="font-weight: 700;">{{ item.employee.emp_code }}</code></td>
+                    <td style="font-weight: 600; color: var(--text-primary);">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="width: 26px; height: 26px; border-radius: 50%; background: #0b1a2c; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                                {{ item.employee.full_name|slice:":1" }}
+                            </span>
+                            {{ item.employee.full_name }}
+                        </div>
+                    </td>
+                    <td style="color: #4b5563;">{{ item.employee.department.name|default:"General" }}</td>
+                    <td style="color: #4b5563;">{{ item.employee.designation }}</td>
+                    <td>
+                        <span style="font-weight: 600; color: #166534;">{{ item.attendance }}%</span>
+                    </td>
+                    <td style="font-weight: 700; color: var(--text-primary);">
+                        ₹{{ item.net_salary|floatformat:0 }}
+                    </td>
+                    <td>
+                        {% if item.is_paid %}
+                            <span class="pill-badge done">Paid</span>
+                        {% else %}
+                            <span class="pill-badge pending">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <a href="{{ item.detail_url }}" class="btn-primary-green" style="padding: 0.35rem 0.95rem; font-size: 0.82rem; text-decoration: none; border-radius: 6px; font-weight: 700;">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Add Employee -->
+<div class="modal" id="addEmployeeModal">
+    <div class="modal-dialog" style="max-width: 550px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Employee</h3>
+            <button type="button" class="modal-close" id="closeAddEmpModal">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'add_employee' %}">
+            {% csrf_token %}
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Full Name *</label>
+                    <input type="text" name="first_name" class="search-input" style="width: 100%;" required placeholder="e.g. Rahul Sharma">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Username *</label>
+                        <input type="text" name="username" class="search-input" style="width: 100%;" required placeholder="e.g. rahul">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Employee ID *</label>
+                        <input type="text" name="emp_code" class="search-input" style="width: 100%;" required placeholder="e.g. E-106">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Department</label>
+                        <select name="department" class="search-input" style="width: 100%;">
+                            {% for d in departments %}
+                                <option value="{{ d.id }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Designation</label>
+                        <input type="text" name="designation" class="search-input" style="width: 100%;" placeholder="e.g. Developer">
+                    </div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Monthly Net Salary (₹) *</label>
+                    <input type="number" step="0.01" name="basic_salary" class="search-input" style="width: 100%;" value="50000" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="search-input" style="background: transparent; border: 1px solid #d1d5db; cursor: pointer;" id="cancelAddEmpBtn">Cancel</button>
+                <button type="submit" class="btn-primary-green">Save Employee</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("employeeSearchInput");
+    if (searchInput) {
+        searchInput.addEventListener("input", function() {
+            const query = this.value.toLowerCase().trim();
+            // Filter cards
+            document.querySelectorAll(".searchable-card").forEach(card => {
+                const name = card.getAttribute("data-name") || "";
+                const code = card.getAttribute("data-code") || "";
+                const dept = card.getAttribute("data-dept") || "";
+                if (name.includes(query) || code.includes(query) || dept.includes(query)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+            // Filter table rows
+            document.querySelectorAll(".searchable-row").forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

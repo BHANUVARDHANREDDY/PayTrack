@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Finance System - Two Separate Portals</title>
+    <link rel="stylesheet" href="{% static 'payroll/css/style.css' %}">
+</head>
+<body style="background: #f3f4f6; margin: 0; padding: 0;">
+
+    <!-- Top Navigation Gateway Header -->
+    <header style="background: #0b1a2c; padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="font-size: 1.35rem; font-weight: 800; color: #ffffff; letter-spacing: -0.01em;">
+            Finance Portal
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'manager_portal' %}" class="btn-primary-green" style="background: #1e3a8a; text-decoration: none; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                👔 Manager Portal (1st URL)
+            </a>
+            <a href="{% url 'employee_portal' %}" class="btn-primary-green" style="text-decoration: none; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                🧑‍💻 Employee Portal (2nd URL)
+            </a>
+        </div>
+    </header>
+
+    <div style="max-width: 1200px; margin: 2.5rem auto; padding: 0 1.5rem;">
+        <div style="text-align: center; max-width: 850px; margin: 0 auto 3rem auto;">
+            <div style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 0.35rem 1.25rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem;">
+                🏢 Enterprise Finance Department Architecture
+            </div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; color: #0b1a2c; line-height: 1.2; margin-bottom: 0.75rem;">
+                Two Separate Dedicated Dashboards
+            </h1>
+            <p style="font-size: 1.1rem; color: #64748b; line-height: 1.6; margin: 0;">
+                Strictly separated into two independent portals with their own authentication, routes, data isolation, and distinct UI layouts.
+            </p>
+        </div>
+
+        <!-- Two Main URLs Gateway Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; margin-bottom: 3.5rem;">
+            <!-- 1st URL: Manager Portal Card -->
+            <div class="content-card" style="border: 2px solid #1e3a8a; position: relative; margin-bottom: 0;">
+                <div style="position: absolute; top: 14px; right: 16px; background: #1e3a8a; color: #fff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">
+                    1ST URL &bull; MANAGER EXCLUSIVE
+                </div>
+                <div style="padding: 1rem 0.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">👔</div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #0b1a2c; margin-bottom: 0.5rem;">
+                        Manager Portal
+                    </h2>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+                        URL: <code>/manager/</code> — Executive command center. Review 4 KPI cards, run live staff search, onboard employees, inspect today's attendance bar, and disburse monthly salaries in 1-click.
+                    </p>
+                    <ul style="list-style: none; padding: 0; margin-bottom: 1.75rem; color: #475569; font-size: 0.9rem; line-height: 1.8;">
+                        <li>✅ Monthly Salary Payout Stepper (1-Click Disbursal)</li>
+                        <li>✅ Employee Drill-Down Modal (Detailed Compensation)</li>
+                        <li>✅ Onboarding Modal ("Add Employee" Feature)</li>
+                        <li>✅ Strictly Isolated to Manager Role (Username: <code>manager</code>)</li>
+                    </ul>
+                    <a href="{% url 'manager_portal' %}" class="btn-primary-green" style="background: #1e3a8a; width: 100%; justify-content: center; font-size: 1rem; padding: 0.85rem; text-decoration: none;">
+                        Open Manager Dashboard (1st URL) &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2nd URL: Employee Portal Card -->
+            <div class="content-card" style="border: 2px solid var(--btn-green); position: relative; margin-bottom: 0;">
+                <div style="position: absolute; top: 14px; right: 16px; background: var(--btn-green); color: #fff; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">
+                    2ND URL &bull; EMPLOYEE EXCLUSIVE
+                </div>
+                <div style="padding: 1rem 0.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🧑‍💻</div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #0b1a2c; margin-bottom: 0.5rem;">
+                        Employee Portal
+                    </h2>
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+                        URL: <code>/employee/</code> — Dedicated employee self-service hub. Check personal profile details, inspect color-coded November 2026 attendance calendar, and download official payslip letters.
+                    </p>
+                    <ul style="list-style: none; padding: 0; margin-bottom: 1.75rem; color: #475569; font-size: 0.9rem; line-height: 1.8;">
+                        <li>✅ Full Navigation: Dashboard, My Profile, Attendance & Payslips</li>
+                        <li>✅ Color-Coded 7-Column Attendance Calendar (Nov 2026)</li>
+                        <li>✅ Official Corporate Document Letter Payslips (with Words in INR)</li>
+                        <li>✅ Strictly Isolated to Employee Role (Accounts: <code>anita</code>, <code>ravi</code>, etc.)</li>
+                    </ul>
+                    <a href="{% url 'employee_portal' %}" class="btn-primary-green" style="width: 100%; justify-content: center; font-size: 1rem; padding: 0.85rem; text-decoration: none;">
+                        Open Employee Dashboard (2nd URL) &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- UI/UX Specifications Gallery -->
+        <div class="content-card" style="margin-bottom: 3.5rem;">
+            <div class="card-top-bar">
+                <div>
+                    <h3 class="card-heading">📸 Specification & Interface Showcase</h3>
+                    <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.25rem;">
+                        Exact design implementations matching uploaded specifications
+                    </p>
+                </div>
+                <span class="pill-badge done">Verified Layouts</span>
+            </div>
+
+            <div class="gallery-grid">
+                <div class="gallery-card">
+                    <a href="{% static 'payroll/img/design_manager_dashboard.png' %}" target="_blank">
+                        <img src="{% static 'payroll/img/design_manager_dashboard.png' %}" alt="Manager Dashboard Specification">
+                    </a>
+                    <div class="gallery-body">
+                        <h4>1st URL: Manager Dashboard</h4>
+                        <p>Executive view with dark navy sidebar, KPI cards, employee roster with search/add, attendance bar, and monthly payout stepper.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <a href="{% static 'payroll/img/design_employee_dashboard.png' %}" target="_blank">
+                        <img src="{% static 'payroll/img/design_employee_dashboard.png' %}" alt="Employee Dashboard Specification">
+                    </a>
+                    <div class="gallery-body">
+                        <h4>2nd URL: Employee Dashboard</h4>
+                        <p>Clean personal hub with employee details, color-coded November 2026 attendance calendar, and downloadable payslips history.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <a href="{% static 'payroll/img/manager_payroll_details_modal.png' %}" target="_blank">
+                        <img src="{% static 'payroll/img/manager_payroll_details_modal.png' %}" alt="Manager Payroll Details Modal">
+                    </a>
+                    <div class="gallery-body">
+                        <h4>Employee Payroll Drill-Down</h4>
+                        <p>Clicking an employee displays comprehensive salary structure, breakdown of allowances/deductions, and past slips.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card">
+                    <a href="{% static 'payroll/img/payslip_screenshot.png' %}" target="_blank">
+                        <img src="{% static 'payroll/img/payslip_screenshot.png' %}" alt="Official Printable Salary Slip">
+                    </a>
+                    <div class="gallery-body">
+                        <h4>Official Document Letter Payslip</h4>
+                        <p>Corporate payroll voucher with company letterhead, CIN/GSTIN, transaction ID, bank details, and digital stamp.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

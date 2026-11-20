@@ -1,0 +1,98 @@
+{% extends "payroll/manager_base.html" %}
+{% load static %}
+
+{% block title %}Attendance - Manager Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header Area Matching Uploaded Layout -->
+<div class="top-header">
+    <div class="top-header-title">
+        <h1>Attendance</h1>
+        <p>Organization-wide daily attendance tracking, department ratios, and presence standing</p>
+    </div>
+    <div class="payroll-month-selector">
+        <label>Attendance date</label>
+        <input type="text" class="search-input" value="Today, 20 Nov 2026" readonly style="font-weight: 600; cursor: default;">
+    </div>
+</div>
+
+<!-- 4 KPI Cards -->
+<div class="manager-stats-grid" style="margin-bottom: 1.5rem;">
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Total employees</div>
+        <div class="dash-stat-val">{{ stat_total_employees }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Present today</div>
+        <div class="dash-stat-val" style="color: #166534;">{{ stat_present_today }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">On leave</div>
+        <div class="dash-stat-val" style="color: #ea580c;">{{ stat_on_leave }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Unexcused absent</div>
+        <div class="dash-stat-val" style="color: #dc2626;">{{ stat_absent }}</div>
+    </div>
+</div>
+
+<!-- Today's Attendance Visual Card -->
+<div class="content-card" style="margin-bottom: 1.5rem;">
+    <h3 class="card-heading" style="margin-bottom: 1rem;">Today's Attendance Standing</h3>
+
+    <div class="attendance-bar" style="height: 18px; margin-bottom: 1rem;">
+        <div class="bar-present" style="width: 87.5%;"></div>
+        <div class="bar-leave" style="width: 8.3%;"></div>
+        <div class="bar-absent" style="width: 4.2%;"></div>
+    </div>
+
+    <div class="attendance-legend" style="font-size: 0.9rem;">
+        <span><strong>{{ stat_present_today }}</strong> present (87.5%)</span>
+        <span><strong>{{ stat_on_leave }}</strong> on leave (8.3%)</span>
+        <span><strong>{{ stat_absent }}</strong> absent (4.2%)</span>
+    </div>
+</div>
+
+<!-- Staff Attendance Roster Table -->
+<div class="content-card">
+    <div class="card-top-bar">
+        <h3 class="card-heading">Staff Attendance Roster</h3>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">Showing {{ employees|length }} employees</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="design-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Attendance %</th>
+                    <th>Present</th>
+                    <th>Leave</th>
+                    <th>Absent</th>
+                    <th style="text-align: right; width: 100px;">Dossier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td><code>{{ emp.emp_code }}</code></td>
+                    <td style="font-weight: 600; color: var(--text-primary);">{{ emp.full_name }}</td>
+                    <td style="color: #4b5563;">{{ emp.department.name|default:"General" }}</td>
+                    <td style="font-weight: 700; color: #166534;">{{ emp.attendance_percentage }}%</td>
+                    <td>{{ emp.present_days }}</td>
+                    <td>{{ emp.leave_days }}</td>
+                    <td>{{ emp.absent_days }}</td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'manager_employee_detail_page' emp.id %}" class="btn-primary-green" style="padding: 0.35rem 0.85rem; font-size: 0.82rem; text-decoration: none; border-radius: 6px;">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

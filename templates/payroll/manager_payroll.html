@@ -1,0 +1,188 @@
+{% extends "payroll/manager_base.html" %}
+{% load static %}
+
+{% block title %}Payroll - Manager Portal{% endblock %}
+
+{% block content %}
+<!-- Top Header Area Matching Uploaded Layout -->
+<div class="top-header">
+    <div class="top-header-title">
+        <h1>Payroll</h1>
+        <p>Monthly salary disbursement management, calculation verification, and payment logs</p>
+    </div>
+    <div class="payroll-month-selector">
+        <label>Payroll month</label>
+        <select class="search-input" style="font-weight: 600;">
+            <option selected>November 2026</option>
+            <option>October 2026</option>
+            <option>September 2026</option>
+        </select>
+    </div>
+</div>
+
+<!-- 4 KPI Cards -->
+<div class="manager-stats-grid" style="margin-bottom: 1.5rem;">
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Payroll this month</div>
+        <div class="dash-stat-val">{{ stat_payroll_month }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Disbursed so far</div>
+        <div class="dash-stat-val" style="color: #166534;">₹{{ total_paid|floatformat:0 }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Pending payout</div>
+        <div class="dash-stat-val" style="color: #ea580c;">₹{{ remaining_payout|floatformat:0 }}</div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-label">Pending employees</div>
+        <div class="dash-stat-val" style="color: #0b1a2c;">{{ pending_count }}</div>
+    </div>
+</div>
+
+<!-- 2-Column Grid: Payout Stepper & Transactions -->
+<div class="manager-main-grid" style="margin-bottom: 1.5rem;">
+    <!-- Left: Stepper Card -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <h3 class="card-heading" style="margin-bottom: 1.25rem;">Monthly salary payout</h3>
+
+        <div class="payout-steps-list">
+            <div class="payout-step-item">
+                <div class="step-label">
+                    <span class="step-num">1</span>
+                    <span>Attendance verified</span>
+                </div>
+                <span class="pill-badge done">Done</span>
+            </div>
+
+            <div class="payout-step-item">
+                <div class="step-label">
+                    <span class="step-num">2</span>
+                    <span>Salaries calculated</span>
+                </div>
+                <span class="pill-badge done">Done</span>
+            </div>
+
+            <div class="payout-step-item">
+                <div class="step-label">
+                    <span class="step-num {% if pending_count == 0 %}done{% else %}pending{% endif %}">3</span>
+                    <span>Manager approval</span>
+                </div>
+                {% if pending_count == 0 %}
+                    <span class="pill-badge done">Done</span>
+                {% else %}
+                    <span class="pill-badge pending">Pending</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="total-payable-label">Total payable</div>
+        <div class="total-payable-amount">{{ stat_payroll_month }}</div>
+
+        <form method="POST" action="{% url 'process_bulk_payment' %}">
+            {% csrf_token %}
+            <input type="hidden" name="month" value="11">
+            <input type="hidden" name="year" value="2026">
+            <button type="submit" class="btn-primary-green" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; font-weight: 700; border-radius: 8px;">
+                {% if pending_count == 0 %}
+                    Salaries Approved & Disbursed ✓
+                {% else %}
+                    Approve and run payout
+                {% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Right: Recent Settlement Transactions -->
+    <div class="content-card" style="margin-bottom: 0;">
+        <h3 class="card-heading" style="margin-bottom: 1.25rem;">Recent Electronic Transactions</h3>
+
+        <div style="overflow-x: auto; max-height: 380px;">
+            <table class="design-table" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Period</th>
+                        <th>Net Paid</th>
+                        <th>Reference UTR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in recent_transactions %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ txn.employee.full_name }}</td>
+                        <td style="color: var(--text-secondary);">{{ txn.month_year_label }}</td>
+                        <td style="font-weight: 700; color: #166534;">₹{{ txn.net_paid|floatformat:0 }}</td>
+                        <td><code style="font-size: 0.75rem;">{{ txn.transaction_id }}</code></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 1.5rem;">
+                            No recent transactions recorded.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Employee Payroll Table -->
+<div class="content-card">
+    <div class="card-top-bar">
+        <h3 class="card-heading">November 2026 Payroll Roster</h3>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">{{ payroll_table|length }} staff on roster</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="design-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Attendance</th>
+                    <th>Net Salary</th>
+                    <th>Status</th>
+                    <th style="text-align: right; width: 180px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in payroll_table %}
+                <tr>
+                    <td><code>{{ row.employee.emp_code }}</code></td>
+                    <td style="font-weight: 600; color: var(--text-primary);">{{ row.employee.full_name }}</td>
+                    <td style="color: #4b5563;">{{ row.employee.department.name|default:"General" }}</td>
+                    <td style="color: #4b5563;">{{ row.employee.attendance_percentage }}%</td>
+                    <td style="font-weight: 700;">₹{{ row.net_salary|floatformat:0 }}</td>
+                    <td>
+                        {% if row.is_paid %}
+                            <span class="pill-badge done">Paid</span>
+                        {% else %}
+                            <span class="pill-badge pending">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'manager_employee_detail_page' row.employee.id %}" class="table-link" style="margin-right: 0.75rem; font-weight: 600;">
+                            View
+                        </a>
+                        {% if not row.is_paid %}
+                        <form method="POST" action="{% url 'process_single_payment' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="employee_id" value="{{ row.employee.id }}">
+                            <input type="hidden" name="month" value="11">
+                            <input type="hidden" name="year" value="2026">
+                            <button type="submit" class="btn-primary-green" style="padding: 0.25rem 0.65rem; font-size: 0.8rem; border-radius: 4px;">
+                                Pay
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
